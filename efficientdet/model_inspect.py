@@ -164,13 +164,17 @@ class ModelInspector(object):
     # Serving time batch size should be fixed.
     batch_size = self.batch_size or 1
     all_files = list(tf.io.gfile.glob(image_path_pattern))
-    print('all_files=', all_files)
     num_batches = (len(all_files) + batch_size - 1) // batch_size
-
+    
     for i in range(num_batches):
       batch_files = all_files[i * batch_size:(i + 1) * batch_size]
       height, width = self.model_config.image_size
-      images = [Image.open(f) for f in batch_files]
+      images = []
+      img_path = []
+      for f in batch_files:
+        images.append(Image.open(f))
+        img_path.append(f)
+
       if len(set([m.size for m in images])) > 1:
         # Resize only if images in the same batch have different sizes.
         images = [m.resize(height, width) for m in images]
@@ -184,9 +188,42 @@ class ModelInspector(object):
       for j in range(size_before_pad):
         img = driver.visualize(raw_images[j], detections_bs[j], **kwargs)
         img_id = str(i * batch_size + j)
-        output_image_path = os.path.join(output_dir, img_id + '.jpg')
-        Image.fromarray(img).save(output_image_path)
-        print('writing file to %s' % output_image_path)
+        
+        output_image_path = os.path.join(output_dir,img_path[j])
+        output_image_path1 = os.path.join(output_dir,img_path[j][:img_path[j].rindex("/")])
+        
+        boxes = detections_bs[j][:, 1:5]
+        classes = detections_bs[j][:, 6].astype(int)
+        scores = detections_bs[j][:, 5]
+        
+        box_path = output_dir+"/boxes"
+        img_box_name = output_image_path[output_image_path.rindex('/'):output_image_path.rindex('.')]
+        if not os.path.exists(box_path):
+                os.makedirs(box_path)
+                
+        print(output_image_path)
+        
+        with open(box_path+img_box_name+'.txt','a') as box_log:
+            for iy,x in enumerate(detections_bs[j]):
+                if x[5] > 0.5:
+                    boxstr = ''
+                    
+                    boxstr += str(x[5]) #confident
+                    boxstr += ' '+str(x[1:5][1]) 
+                    boxstr += ' '+str(x[1:5][0])
+                    boxstr += ' '+str(x[1:5][3])
+                    boxstr += ' '+str(x[1:5][2])
+                    
+                    box_log.write('tumor '+boxstr+'\n')
+                    if not os.path.exists(output_image_path1):
+                        os.makedirs(output_image_path1)
+                    print(output_image_path1)
+                    #output images
+                    Image.fromarray(img).save(output_image_path)
+        
+        if i % int(num_batches/10) == 0:
+            print('progress',i," / ",num_batches," ")
+        ####################################################
 
   def saved_model_benchmark(self,
                             image_path_pattern,
