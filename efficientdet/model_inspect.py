@@ -188,22 +188,26 @@ class ModelInspector(object):
       for j in range(size_before_pad):
         img = driver.visualize(raw_images[j], detections_bs[j], **kwargs)
         img_id = str(i * batch_size + j)
+
+        image_file_name = os.path.basename(img_path[j])
+        folder_name = os.path.basename(os.path.dirname(img_path[j]))
         
-        output_image_path = os.path.join(output_dir,img_path[j])
-        output_image_path1 = os.path.join(output_dir,img_path[j][:img_path[j].rindex("/")])
+        output_image_path = os.path.join(output_dir,'png',folder_name,image_file_name)
+        output_image_path1 = os.path.join(output_dir,folder_name)
+
+        print(image_file_name)
         
         boxes = detections_bs[j][:, 1:5]
         classes = detections_bs[j][:, 6].astype(int)
         scores = detections_bs[j][:, 5]
         
         box_path = output_dir+"/boxes"
-        img_box_name = output_image_path[output_image_path.rindex('/'):output_image_path.rindex('.')]
+        img_box_name = image_file_name[:image_file_name.rindex('.')]
         if not os.path.exists(box_path):
                 os.makedirs(box_path)
                 
-        print(output_image_path)
         
-        with open(box_path+img_box_name+'.txt','a') as box_log:
+        with open(os.path.join(box_path,img_box_name)+'.txt','a') as box_log:
             for iy,x in enumerate(detections_bs[j]):
                 if x[5] > kwargs.get('min_score_thresh'):
                     boxstr = ''
@@ -218,7 +222,6 @@ class ModelInspector(object):
                     if not os.path.exists(output_image_path1):
                         os.makedirs(output_image_path1)
                     print(output_image_path1)
-                    #output images
                     Image.fromarray(img).save(output_image_path)
         
         if i % int(num_batches/10) == 0:
