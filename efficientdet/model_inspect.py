@@ -205,7 +205,7 @@ class ModelInspector(object):
         
         with open(box_path+img_box_name+'.txt','a') as box_log:
             for iy,x in enumerate(detections_bs[j]):
-                if x[5] > 0.5:
+                if x[5] > kwargs.get('min_score_thresh'):
                     boxstr = ''
                     
                     boxstr += str(x[5]) #confident
