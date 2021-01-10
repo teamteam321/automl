@@ -221,7 +221,7 @@ class ModelInspector(object):
                     box_log.write('tumor '+boxstr+'\n')
                     if not os.path.exists(output_image_path1):
                         os.makedirs(output_image_path1)
-                    print(output_image_path1)
+                    #print(output_image_path1)
                     Image.fromarray(img).save(output_image_path)
         
         if i % int(num_batches/10) == 0:
