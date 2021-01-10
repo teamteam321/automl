@@ -193,9 +193,9 @@ class ModelInspector(object):
         folder_name = os.path.basename(os.path.dirname(img_path[j]))
         
         output_image_path = os.path.join(output_dir,'png',folder_name,image_file_name)
-        output_image_path1 = os.path.join(output_dir,folder_name)
+        output_image_path1 = os.path.join(output_dir,'png',folder_name)
 
-        print(image_file_name)
+        #print(image_file_name)
         
         boxes = detections_bs[j][:, 1:5]
         classes = detections_bs[j][:, 6].astype(int)
