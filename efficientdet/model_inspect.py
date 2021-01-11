@@ -28,6 +28,7 @@ import tensorflow.compat.v1 as tf
 import hparams_config
 import inference
 import utils
+from tqdm import tqdm
 from tensorflow.python.client import timeline  # pylint: disable=g-direct-tensorflow-import
 
 flags.DEFINE_string('model_name', 'efficientdet-d0', 'Model.')
@@ -166,7 +167,7 @@ class ModelInspector(object):
     all_files = list(tf.io.gfile.glob(image_path_pattern))
     num_batches = (len(all_files) + batch_size - 1) // batch_size
     
-    for i in range(num_batches):
+    for i in tqdm(range(num_batches)):
       batch_files = all_files[i * batch_size:(i + 1) * batch_size]
       height, width = self.model_config.image_size
       images = []
@@ -224,8 +225,8 @@ class ModelInspector(object):
                     #print(output_image_path1)
                     Image.fromarray(img).save(output_image_path)
         
-        if i % int(num_batches/10) == 0:
-            print('progress',i," / ",num_batches," ")
+        #if i % int(num_batches/10) == 0:
+        #    print('progress',i," / ",num_batches," ")
         ####################################################
 
   def saved_model_benchmark(self,
